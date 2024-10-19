@@ -99,19 +99,84 @@ if __name__ == "__main__":
                             try:
                                 
                                 print("----- CADASTRAR OPERAÇÃO DE COLHEITA -----\n")
-                                area = float(input(margem + "Área em hectares: "))
-                                velocidade = int(input(margem + "Velocidade de deslocamento (km/h): "))
-                                rotacao = int(input(margem + "Rotação do Exaustor Primário: "))
-                                horas_sem_afiacao = int(input(margem + "Horas sem afiação da faca de corte: "))
-                                colheitadeira = input(margem + "Modelo da Colheitadeira (A, B ou C): ").upper()
-                                largura_maquina = float(input(margem + "Largura da máquina (m): "))
-                                data_inicio = input(margem + "Data de início da colheita (DD/MM/AAAA): ")
+                                
+                                # Entrada para área em hectares
+                                while True:
+                                    try:
+                                        area = float(input(margem + "Área em hectares: "))
+                                        if area > 0:  # Restrição: área deve ser positiva
+                                            break
+                                        else:
+                                            print("A área deve ser um número positivo.")
+                                    except ValueError:
+                                        print("Por favor, insira um número válido.")
+
+                                # Entrada para velocidade de deslocamento
+                                while True:
+                                    try:
+                                        velocidade = int(input(margem + "Velocidade de deslocamento (km/h): "))
+                                        if velocidade in perda_velocidade.keys():  # Restrição: velocidade deve estar nas chaves do dicionário
+                                            break
+                                        else:
+                                            print(f"Velocidade deve ser uma das seguintes: {list(perda_velocidade.keys())}.")
+                                    except ValueError:
+                                        print("Por favor, insira um número inteiro válido.")
+
+                                # Entrada para rotação do exaustor primário
+                                while True:
+                                    try:
+                                        rotacao = int(input(margem + "Rotação do Exaustor Primário: "))
+                                        if rotacao in perda_rotacao.keys():  # Restrição: rotação deve estar nas chaves do dicionário
+                                            break
+                                        else:
+                                            print(f"Rotação deve ser uma das seguintes: {list(perda_rotacao.keys())}.")
+                                    except ValueError:
+                                        print("Por favor, insira um número inteiro válido.")
+
+                                # Entrada para horas sem afiação da faca de corte
+                                while True:
+                                    try:
+                                        horas_sem_afiacao = int(input(margem + "Horas sem afiação da faca de corte: "))
+                                        if horas_sem_afiacao in perda_horas.keys():  # Restrição: horas sem afiação deve estar nas chaves do dicionário
+                                            break
+                                        else:
+                                            print(f"Horas sem afiação devem ser uma das seguintes: {list(perda_horas.keys())}.")
+                                    except ValueError:
+                                        print("Por favor, insira um número inteiro válido.")
+
+                                # Entrada para modelo da colheitadeira
+                                while True:
+                                    colheitadeira = input(margem + "Modelo da Colheitadeira (A, B ou C): ").upper()
+                                    if colheitadeira in perda_colheitadeira.keys():  # Restrição: modelo deve estar nas chaves do dicionário
+                                        break
+                                    else:
+                                        print("Modelo da colheitadeira deve ser 'A', 'B' ou 'C'.")
+
+                                # Entrada para largura da máquina
+                                while True:
+                                    try:
+                                        largura_maquina = float(input(margem + "Largura da máquina (m): "))
+                                        if largura_maquina in [3,4,5]:  # Restrição: largura deve ser 3, 4 ou 5
+                                            break
+                                        else:
+                                            print("Largura da máquina deve ser 3, 4 ou 5.")
+                                    except ValueError:
+                                        print("Por favor, insira um número válido.")
+
+                                # Entrada para data de início
+                                while True:
+                                    data_inicio = input(margem + "Data de início da colheita (DD/MM/AAAA): ")
+                                    try:
+                                        data_inicio = datetime.strptime(data_inicio, "%d/%m/%Y")  # Verifica se a data está no formato correto
+                                        break
+                                    except ValueError:
+                                        print("Formato da data inválido. Use DD/MM/AAAA.")
+
                                 perdas = estimar_perdas(velocidade, rotacao, horas_sem_afiacao, colheitadeira)
                                 tempo_colheita = estimar_tempo_colheita(area, largura_maquina, velocidade)
                                 consumo_diesel = calcular_consumo_diesel(area)
                                 emissao_co2 = calcular_emissao_co2(consumo_diesel)
                                 custo_diesel = calcular_custo_diesel(consumo_diesel)
-                                data_inicio = datetime.strptime(data_inicio, "%d/%m/%Y")
                                 data_fim = data_inicio + timedelta(hours=tempo_colheita)
 
                                 id = int(round(datetime.now().timestamp()))
@@ -173,45 +238,58 @@ if __name__ == "__main__":
                                 print(f"Data de fim estimada: {data_fim.strftime('%d/%m/%Y')}")
 
                         case 2:
-                                if not id:
-                                    print(f'Volte para a opcao 1')
+                            if not id:
+                                print(f'Volte para a opcao 1')
+                            else:
+                                print("----- LISTAR OPERAÇÕES DE COLHEITA -----\n")
 
+                                cursor.execute(f'SELECT * FROM COLHEITA_CANA WHERE ID={id}')
+                                data = cursor.fetchone()
+
+                                if not data:
+                                    print("Não há operações de colheita cadastradas!")
                                 else:
-                                    print("----- LISTAR OPERAÇÕES DE COLHEITA -----\n")
+                                    df = pd.DataFrame(
+                                        [data],
+                                        columns= [
+                                            'ID',
+                                            'Área',
+                                            'Velocidade',
+                                            'Rotação',
+                                            'Horas sem Afiação',
+                                            'Colheitadeira',
+                                            'Largura Máquina',
+                                            'Perdas Estimadas',
+                                            'Tempo Estimado',
+                                            'Consumo Diesel',
+                                            'Emissão CO2',
+                                            'Custo Diesel',
+                                            'Data Início',
+                                            'Data Fim'
+                                        ]
+                                    )
 
-                                    cursor.execute(f'SELECT * FROM COLHEITA_CANA WHERE ID={id}')
-                                    data = cursor.fetchone()
+                                    # Adicionando cálculos de médias e somatórios
+                                    media_perdas = df['Perdas Estimadas'].mean()
+                                    soma_consumo_diesel = df['Consumo Diesel'].sum()
+                                    soma_emissao_co2 = df['Emissão CO2'].sum()
+                                    soma_custo_diesel = df['Custo Diesel'].sum()
 
-                                    if not data:
-                                        print("Não há operações de colheita cadastradas!")
+                                    print(tabulate(
+                                        df,
+                                        headers='keys',
+                                        tablefmt='psql',
+                                        showindex='never'
+                                    ))
 
-                                    else:
-                                        print(tabulate(
-                                            pd.DataFrame(
-                                                [data],
-                                                columns= [
-                                                    'ID',
-                                                    'Área',
-                                                    'Velocidade',
-                                                    'Rotação',
-                                                    'Horas sem Afiação',
-                                                    'Colheitadeira',
-                                                    'Largura Máquina',
-                                                    'Perdas Estimadas',
-                                                    'Tempo Estimado',
-                                                    'Consumo Diesel',
-                                                    'Emissão CO2',
-                                                    'Custo Diesel',
-                                                    'Data Início',
-                                                    'Data Fim'
-                                                ]
-                                            ),
-                                            headers='keys',
-                                            tablefmt='psql',
-                                            showindex='never'
-                                        ))
+                                    print("\nPerdas Estimadas em %, Tempo Estimado em horas, Consumo Diesel em litros, Emissão CO2 em kg, Custo Diesel em R$.")
 
-                                        print("\nPerdas Estimadas em %, Tempo Estimado em horas, Consumo Diesel em litros, Emissão CO2 em kg, Custo Diesel em R$.")
+                                    # Exibindo os resultados das análises
+                                    print(f"\nMédia de Perdas Estimadas: {media_perdas:.2f}%")
+                                    print(f"Soma do Consumo de Diesel: {soma_consumo_diesel:.2f} litros")
+                                    print(f"Soma da Emissão de CO2: {soma_emissao_co2:.2f} kg")
+                                    print(f"Soma do Custo de Diesel: R$ {soma_custo_diesel:.2f}")
+
 
                         case 3:
                             print("----- ALTERAR OPERAÇÃO DE COLHEITA -----\n")
