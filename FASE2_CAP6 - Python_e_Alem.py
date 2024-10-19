@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
                     print('------- SISTEMA DE COLHEITA DE CANA-DE-AÇÚCAR -------')
                     print('')
-                    print(
+                    print("""
                     '1 - Cadastrar Operação de Colheita' +
                     '2 - Listar Operações' +
                     '3 - Alterar Operação' +
@@ -79,7 +79,7 @@ if __name__ == "__main__":
                     '5 - Estimar Perdas, Tempo e Custo de Colheita' +
                     '6 - Consultar Operação Específica' +
                     '7 - SAIR'
-                    )
+                    """)
 
                     margem = ' ' * 4
 
